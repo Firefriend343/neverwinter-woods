@@ -18,7 +18,7 @@
   </head>
 <body>
   <div id="bg" style="width:1300px; height:630px; background:white; border:2px solid black; margin: 2px;">
-    <img id="player1" class="solid player" src="final-aurum-pixilart.png" style="position:absolute;" width=60 height=60>
+    <img id="player1" class="solid player" src="forest-ninja-pixilart.png" style="position:absolute;" width=60 height=60>
     <!--- img id="enemy1" class="solid enemy" src="neverwinter-wars-testenemy1-pixilart.png" style="position:absolute; left:1100px; top:250px"width=80 height=80>
     <img id="enemy2" class="solid enemy" src="magic-carpet-animation-pixilart.gif" style="position:absolute; left:2800px; top:250px"width=40px height=40px>
     <img id="enemy3" class="solid enemy" src="pixil-frame-0 (1).png" style="position:absolute; left:2800px; top:250px"width=40px height=40px>
@@ -215,17 +215,17 @@
             } else if (this.command == "jump") {
                // Tried to jump but can't right now.
             } else if (this.command == "skin1") {
-              this.element.src = "final-aurum-pixilart.png";
+              this.element.src = "forest-ninja-pixilart.png";
             } else if (this.command == "skin2") {
               window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; }, 2000);
             } else if (this.command == "Aurum") {
-              this.element.src = "final-aurum-pixilart.png";
+              this.element.src = "forest-ninja-pixilart.png";
             } else if (this.command == "attack" && this.state != "attacking") {
               this.element.src = "aurum-attack.png";
-              window.setTimeout(function () { player1.element.src = "aurum-attack.png";  }, 200);
-              window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; }, 300);
-              window.setTimeout(function () { player1.element.src = "aurum-attack.png"; }, 500);
-              window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; player1.state = "normal"; }, 600);
+              window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png";  }, 200);
+              window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png"; }, 300);
+              window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png"; }, 500);
+              window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png"; player1.state = "normal"; }, 600);
               let victim_el = collision(this.x + this.width +5, this.y + this.height/2, this, "target",5 ,5);
               if (this.facing == -1) {
                 victim_el = collision(this.x - 10, this.y + this.height/2, this, "target", 5 ,5);
