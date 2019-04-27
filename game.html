@@ -1,0 +1,818 @@
+<html>
+  <head>
+    <title> Sandbox Level 1 </title>
+     <style>
+      .plat { background: orange; position: absolute; border-radius: 8px; border: solid grey 2px; transition: 0.5s;}
+      .wind { background: #ddd; position: absolute; border-radius: 20px; opacity: 0.3}
+      .coin { background: gold; position: absolute; border-radius: 40px; border: solid brown 2px; width: 30px; height: 30px; opacity: 0.3}
+      .defeated { width: 0px !important; height: 0px !important; transition: 0.1s; }
+      .rock { background: grey; position: absolute; border-radius: 10px; border: solid black 2px; width: 60px; height: 60px; opacity: 0.3}
+      .enemy { transition: 0.1s; }
+      .player { transition: 0.08s; }
+      .push { background: #ddd; position: absolute; opacity: 0.5; width: 100px; height: 105px; transition: 0.1s; }
+       #bg {transition: 0.2s; }
+      .door { position: absolute }
+      .bar { position: absolute; height: 6px; width: 60px; background: #ddd; border-radius: 5px; padding: 3px; }
+      .bar span { display: block; background: green; height: 100%; width: 25%; }  
+    </style>
+  </head>
+<body>
+  <div id="bg" style="width:1300px; height:630px; background:white; border:2px solid black; margin: 2px;">
+    <img id="player1" class="solid player" src="final-aurum-pixilart.png" style="position:absolute;" width=60 height=60>
+    <!--- img id="enemy1" class="solid enemy" src="neverwinter-wars-testenemy1-pixilart.png" style="position:absolute; left:1100px; top:250px"width=80 height=80>
+    <img id="enemy2" class="solid enemy" src="magic-carpet-animation-pixilart.gif" style="position:absolute; left:2800px; top:250px"width=40px height=40px>
+    <img id="enemy3" class="solid enemy" src="pixil-frame-0 (1).png" style="position:absolute; left:2800px; top:250px"width=40px height=40px>
+    <img id="enemy4" class="solid enemy" src="dasher-pixilart (1).png" style="position:absolute; left: 3700px; top: 600px"width=30px height=28px>
+    <img id="enemy5" class="solid enemy" src="totality-pixilart.png" style="position:absolute; left : 3700px; top: 800px"width=120px height=120px>
+    -->
+    <img id="door1" class="door" src="forest-ninja-pixilart.png" style="position:absolute; left:1160px; top:490px; display:none" width=150px height=150px>
+  </div> <!-- end bg -->
+  
+  <p id="player1_debug"></p>
+  <p id="enemy1_debug"></p>
+  <p id="enemy2_debug"></p>
+  <p id="enemy3_debug"></p>
+  <p id="enemy4_debug"></p>
+  <p id="enemy5_debug"></p>
+
+  
+  <script>
+    ///NO, FORREST!!!!
+        let allPlats = [];
+        class Plat {
+          constructor(x1, y1, w, h, x2, y2, speed) {
+            this.x = x1; 
+            this.y = y1;
+            this.x1 = x1 || x1;
+            this.y1 = y1 || y1;
+            this.x2 = x2;
+            this.y2 = y2;
+            this.speed = speed || 1;
+            this.percent = 0;  //progress between 0.0 and 1.0.
+            
+            let platformEl = document.createElement("div");
+            platformEl.classList.add('plat');
+            platformEl.classList.add('solid');
+            platformEl.style.left = this.x + 'px';
+            platformEl.style.top = this.y + 'px';
+            platformEl.style.width = w + 'px';
+            platformEl.style.height = h + 'px';
+            bg.appendChild(platformEl);
+            this.element = platformEl;
+            this.element.sprite = this;
+            allPlats.push(this);
+          }
+          
+          move() {
+            if (this.x2 === undefined) {
+              return;
+              //not moving plat
+            }  
+            this.x = this.x1 + (this.x2 - this.x1) * this.percent;
+            this.y = this.y1 + (this.y2 - this.y1) * this.percent;
+            this.element.style.left = this.x + "px";
+            this.element.style.top = this.y + "px";
+            this.percent = this.percent + this.speed;
+            if (this.percent >= 1.0 || this.percent <= 0.0) {
+              this.speed = -this.speed;
+            }
+          }
+        }
+          
+    
+        setInterval (function () {
+          for (let i = 0; i < allPlats.length; i++) {
+            allPlats[i].move();
+          }
+        }, 500);  
+    
+    
+        let allSprites = [];
+        class Sprite {
+          constructor(x, y, image_id, element=null) {
+            this.x = x; 
+            this.y = y;
+            this.spawnx = x;
+            this.spawny = y;
+            this.id = image_id;
+            if (element) {
+              this.element = element;
+            } else {
+              this.element = document.getElementById(image_id);
+            }
+            this.element.sprite = this;
+            this.width = this.element.offsetWidth;
+            this.height = this.element.offsetHeight;
+            this.dx = 0;
+            this.dy = 0;
+            this.facing = 1;
+            this.ax = 0;
+            this.ay = 0;
+            this.state = "starting";
+            this.command = "wait";
+            this.gold = 0;
+            this.hp = 100;  
+            this.damage = 3;
+            this.knockback = 2;
+            this.clinging = false; 
+            //factor?
+            allSprites.push(this);
+          }          
+          
+          decideAction() {
+          }
+          
+          displayAction() {
+            // In the base class, this does nothing,
+          }
+          
+          cling() {
+            this.clinging = true;
+          }
+          
+          makeCoin(x, y) {
+            let coinelement = document.createElement("div");
+            coinelement.classList.add('coin');
+            bg.appendChild(coinelement);
+            let coin = new Sprite(x, y, "", coinelement); 
+            coin.dy = -10;
+            coin.dx = 0;
+          }
+          
+          makePush(x, y) {
+            let pushelement = document.createElement("div");
+            pushelement.classList.add('push');
+            bg.appendChild(pushelement);
+            pushelement.style.top = y;
+            pushelement.style.left = x;
+            setTimeout(function(){
+              bg.removeChild(pushelement);
+            }, 2000);
+            }
+        }
+        
+        class Player extends Sprite {
+          decideAction() {
+            if (this.command == "go left") {
+              console.log("left");
+              this.dx -= 1.25;
+              this.facing = -1;
+              this.element.style.transform = "scaleX(-1)";
+            } else if (this.command == "go right") {
+              console.log("right");
+              this.dx += 1.25;
+              this.facing = 1;
+              this.element.style.transform = "scaleX(1)";
+            } else if (this.command == "jump" && this.dy > -1 && this.dy < 1) {
+              console.log("up");
+              this.dy -= 20;
+              this.state = "jump!";
+              this.clinging = false;
+            } else if (this.command == "throwLeft") {
+              console.log("throwLeft");
+              this.facing = -1;
+              this.makeRock(-30);
+              this.state = "floating";
+              this.command = "wait";
+              this.clinging = false;
+              this.element.style.transform = "scaleX(-1)"
+            } else if (this.command == "throwRight") {
+              console.log("throwRight");
+              this.facing = 1;
+              this.makeRock(30);
+              this.state = "floating";
+              this.command = "wait";
+              this.clinging = false;
+              this.element.style.transform = "scaleX(1)"
+            } else if (this.dx > 90) {
+              this.dx = -100;
+            } else if (this.dx < -90) {
+              this.dx = 100;
+            } else if (this.command == "push") {
+              console.log("push");
+              this.state = "floating";
+              this.command = "wait";
+              this.clinging = false;
+              let forceWidth = 100;
+              let forceX = this.x + this.width +5;
+              let forceY = this.y - 20;
+              if (this.facing == -1) {
+                forceX = this.x - forceWidth - 5;
+                forceY = this.y - 20;
+              }
+              this.makePush(forceX, forceY);
+              let victim_el = collision(forceX, forceY, this, "target", forceWidth, this.height + 20);
+              
+              if (victim_el) { 
+                let victim = victim_el.sprite;
+                victim.dx += 20 * this.facing;
+                victim.dy -= 15;
+                if (victim_el == enemy1) {
+                  victim.hp -= this.damage - 5;
+                }
+              }
+              console.log(victim_el)
+            } else if (this.command == "jump") {
+               // Tried to jump but can't right now.
+            } else if (this.command == "skin1") {
+              this.element.src = "final-aurum-pixilart.png";
+            } else if (this.command == "skin2") {
+              window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; }, 2000);
+            } else if (this.command == "Aurum") {
+              this.element.src = "final-aurum-pixilart.png";
+            } else if (this.command == "attack" && this.state != "attacking") {
+              this.element.src = "aurum-attack.png";
+              window.setTimeout(function () { player1.element.src = "aurum-attack.png";  }, 200);
+              window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; }, 300);
+              window.setTimeout(function () { player1.element.src = "aurum-attack.png"; }, 500);
+              window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; player1.state = "normal"; }, 600);
+              let victim_el = collision(this.x + this.width +5, this.y + this.height/2, this, "target",5 ,5);
+              if (this.facing == -1) {
+                victim_el = collision(this.x - 10, this.y + this.height/2, this, "target", 5 ,5);
+              }
+              if (victim_el) { 
+                let victim = victim_el.sprite;
+                victim.hp -= this.damage;
+                victim.dx += this.knockback * this.facing;
+              }
+              this.state = "attacking";
+            } else if (this.command == "wait") {
+              // Do nothing, and don't log it as an unknown command.
+            } else if (this.command == "rich") {
+              this.gold += 10;
+            } else if (this.command == "heal") {
+              this.hp += 1;
+            } else if (this.command == "something") {
+              this.dx += 100; 
+              this.facing = 1;
+              this.element.style.transform = "scaleX(1)";
+            } else if (this.command == "gnihtemos") { 
+              this.dx -= 100;
+              this.facing = -1;
+              this.element.style.transform = "scaleX(-1)"
+            } else if (this.command == "help") {
+              this.hp += 10;
+            } else {
+              console.log("unknown command: " + this.command)
+            }
+          }  // end decideAction
+          
+          makeRock(dx) {
+            let rockelement = document.createElement("div");
+            rockelement.classList.add('rock');
+            rockelement.classList.add('solid');
+            rockelement.classList.add('target');
+            bg.appendChild(rockelement);
+            let rock = new Rock(this.x + 70 * this.facing, this.y, "", rockelement); 
+          }
+          displayAction() {
+            if (this.progressBar === undefined) {
+              this.progressBar = document.createElement("div");
+              this.progressBar.classList.add("bar");
+              bg.appendChild(this.progressBar);
+              let span = document.createElement("span");
+              this.progressBar.appendChild(span);
+            }
+            if (this.element.classList.contains("defeated")) {
+              this.progressBar.style.display = "none";
+            } else {
+              this.progressBar.style.display = "";
+              this.progressBar.firstChild.style.width = ((this.hp / 150) * 100) + "%";
+              this.progressBar.style.left = this.x + "px";
+              this.progressBar.style.top = this.y - 20 + "px";
+            }
+          }
+        }  
+    ///end Player class
+        class Enemy extends Sprite {
+          decideAction() {
+            if (Math.random() < 0.1 && this.dy > -1 && this.dy < 1) {
+              this.dy -= 15;
+              this.state = "jump!";
+            } else if (this.x > player1.x + player1.width + 3) {
+              this.ax = -1;
+              this.facing = -1;
+              this.element.style.transform = "scaleX(1)";
+            } else if (this.x + this.width < player1.x - 3) {
+              this.ax = 1;
+              this.facing = 1;
+              this.element.style.transform = "scaleX(-1)";
+            } else {
+              console.log ("attack player")
+              let victim_el = collision(this.x + this.width +5, this.y + this.height/2, this, "player",5 ,5);
+              if (this.facing == -1) {
+                victim_el = collision(this.x - 10, this.y + this.height/2, this, "player", 5 ,5);
+              }
+              if (victim_el) { 
+                let victim = victim_el.sprite;
+                victim.hp -= this.damage;
+                victim.dx += this.knockback * this.facing;
+              }
+              this.state = "attacking";
+            }
+          }
+          displayAction() {
+            if (this.progressBar === undefined) {
+              this.progressBar = document.createElement("div");
+              this.progressBar.classList.add("bar");
+              bg.appendChild(this.progressBar);
+              let span = document.createElement("span");
+              this.progressBar.appendChild(span);
+            }
+            if (this.element.classList.contains("defeated")) {
+              this.progressBar.style.display = "none";
+            } else {
+              this.progressBar.style.display = "";
+              this.progressBar.firstChild.style.width = ((this.hp / 100) * 100) + "%";
+              this.progressBar.style.left = this.x + "px";
+              this.progressBar.style.top = this.y - 20 + "px";
+            }
+          }
+        }
+        
+        class Dasher extends Sprite {
+          ///to be added
+          /// what will this be? -Dan
+        }
+    
+        class Rock extends Sprite {
+          cling() {
+            // don't actually cling.
+          }
+        }
+        let bg = document.getElementById('bg');
+        let bgTop = bg.offsetTop +2;
+        let bgLeft = bg.offsetLeft +2;
+        let bgBottom = bgTop + bg.offsetHeight -4;
+        let bgRight = bgLeft + bg.offsetWidth -4;
+        document.body.scrollLeft = 0;
+        let player1 = new Player(100, 100, "player1");
+        player1.damage = 10;
+        player1.knockback = 10;
+        player1.hp = 150
+        let levelNum = 1;
+        function makeLevel(levelNum) {
+          bg.style.background = "#666";
+          setTimeout(function () { bg.style.background = "#fff"; }, 120);
+          player1.dx = 0;
+          player1.dy = 0;
+          player1.ax = 0;
+          player1.ay = 0;
+          let titleElement = document.querySelector("title");
+          titleElement.innerText = "Sandbox Level " + levelNum;
+          let door = document.querySelector(".door");
+          door.style.display = "none";
+          
+          let plats = document.getElementsByClassName("plat");
+          while (0 < plats.length) {
+            let plat = plats[0];
+            bg.removeChild(plat);
+          }
+          let rocks = document.getElementsByClassName("rock");
+          while (0 < rocks.length) {
+            let rock = rocks[0];
+            bg.removeChild(rock);
+          }
+          let coins = document.getElementsByClassName("coin");
+          while (0 < coins.length) {
+            let coin = coins[0];
+            bg.removeChild(coin);
+            //TODO: remove Coin from Sprite list
+          }
+          if (levelNum == 1) {
+            player1.x = 100;
+            player1.y = 100;   
+            new Plat(720, 200, 300, 30);
+            new Plat(450, 140, 160, 30);
+            new Plat(350, 410, 200, 30);
+            new Plat(500, 430, 300, 30, 550, 480, 0.1);
+            player1.makeCoin(350, 60);
+            player1.makeCoin(500, 200);
+            player1.makeCoin(500, 600);
+            ///let enemy1 = new Enemy(300, 180, "enemy1");
+            
+          } else if (levelNum == 2) {
+            player1.x = 100;
+            player1.y = 100; 
+            new Plat(720, 200, 300, 35);
+            new Plat(560, 200, 160, 35);
+            new Plat(350, 410, 200, 35);
+            new Plat(500, 410, 300, 35, 400, 400, 0.1);
+            player1.makeCoin(530, 60);
+            player1.makeCoin(500, 200);
+            player1.makeCoin(500, 600);
+        
+          } else if (levelNum == 3) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(666, 222, 300, 40, 888, 222, 0.2);
+            new Plat(444, 141, 160, 40);
+            new Plat(333, 444, 200, 40);
+            new Plat(555, 333, 300, 40);
+            player1.makeCoin(350, 60);
+            player1.makeCoin(500, 200);
+            player1.makeCoin(500, 600);
+           
+          } else if (levelNum == 4) {
+            player1.x = 100;
+            player1.y = 100; 
+            new Plat(500, 315, 500, 60, 500, 415, 0.1);
+            player1.makeCoin(100, 30);
+            player1.makeCoin(300, 30);
+            
+          } else if (levelNum == 5) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(400, 120, 300, 45, 700, 420, 0.5);
+            new Plat(600, 120, 300, 45, 200, 600, 0.5);
+            new Plat(400, 830, 300, 45, 700, 200, 0.25);
+            player1.makeCoin(Math.random * 1200, 30);
+          
+          } else if (levelNum == 6) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(210, 100, 300, 20, 210, 120, 0.5);
+            new Plat(60, 120, 300, 45, 480, 600, 0.5);
+            new Plat(400, 650, 300, 45, 750, 220, 0.25);
+            player1.makeCoin(Math.random * 1200, 30);
+            
+           } else if (levelNum == 7) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(270, 140, 350, 30, 200, 100, 0.5);
+            new Plat(60, 350, 350, 65, 470, 620, 0.5);
+            new Plat(400, 680, 400, 65, 750, 220, 0.25);
+            player1.makeCoin(Math.random * 1200, 30); 
+             
+           } else if (levelNum == 8) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(260, 140, 350, 30, 500, 340, 0.5);
+            new Plat(100, 320, 350, 75, 470, 170, 0.5);
+            new Plat(210, 530, 430, 65, 750, 280, 0.35);
+            player1.makeCoin(Math.random * 1200, 30); 
+             
+           } else if (levelNum == 9) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(240, 180, 300, 30, 560, 340, 0.5);
+            new Plat(100, 320, 350, 75, 470, 170, 0.5);
+            new Plat(210, 530, 430, 65, 750, 280, 0.35);
+            player1.makeCoin(Math.random * 1200, 30); 
+            
+          
+          } else if (levelNum == 100) {
+            player1.x = 100;
+            player1.y = 100;
+            new Plat(Math.random * 1200, Math.random * 1200, Math.random * 1200, Math.random * 1200 );
+            }
+        }
+        makeLevel(1);
+          
+        let LEFT_KEY = 37;
+        let UP_KEY = 38;
+        let RIGHT_KEY = 39;
+        let DOWN_KEY = 40;
+        document.addEventListener("keydown", function(e) {
+         //possible to remove to prevent moving & scrolling at the same time?
+          // I don't think that's possible? -Dan
+          if (e.keyCode == LEFT_KEY) {
+            console.log("left");
+            player1.command = "go left";
+            alert ("Welcome to the tutorial! First of all, please do not use the arrow keys to move. You should use the WASD keys, W to go up, A to go left, D to go right, and S does not do anything. The attack key is the K key. If you have any questions or feedback, please go to our online survey on Google Classroom and post it. Thx");
+          } else if (e.keyCode == RIGHT_KEY) {
+            console.log("right");
+            player1.command = "go right";
+            alert ("Welcome to the tutorial! First of all, please do not use the arrow keys to move. You should use the WASD keys, W to go up, A to go left, D to go right, and S does not do anything. The attack key is the K key. If you have any questions or feedback, please go to our online survey on Google Classroom and post it. Thx");
+          } else if (e.keyCode == UP_KEY && player1.dy > -1 && player1.dy < 1) {
+            console.log("up");
+            player1.command = "jump";
+            alert ("Welcome to the tutorial! First of all, please do not use the arrow keys to move. You should use the WASD keys, W to go up, A to go left, D to go right, and S does not do anything. The attack key is the K key. If you have any questions or feedback, please go to our online survey on Google Classroom and post it. Thx");
+          }
+          if (e.key == "a") {
+            console.log("a");
+            player1.command = "go left";
+          } else if (e.key == "d") {
+            console.log("d");
+            player1.command = "go right";
+          } else if ((e.key == "w") && player1.dy > -1 && player1.dy < 1) {
+            console.log("w");
+            player1.command = "jump";
+          } else if (e.key == "k") {
+            console.log("attack");
+            player1.command = "attack";
+          } else if (e.key == "j") {
+            console.log("throwRock");
+            player1.command = "throwLeft";
+          } else if (e.key == "l") {
+            console.log("throwRock");
+            player1.command = "throwRight";
+          } else if (e.key == "f") {
+            console.log("push");
+            player1.command = "push";
+          } else if (e.key == "1") {
+            console.log ("skin1");
+            player1.command = "skin1";
+          } else if (e.key == "2") {
+            console.log("skin2");
+            player1.command = "skin2";
+          } else if (e.key == "0") {
+            console.log("Aurum");
+            player1.command = "Aurum";
+          } else if (e.key == "~") {
+            console.log("rich");
+            player1.command = "rich";
+          } else if (e.key == "h") {
+            console.log("heal");
+            player1.command = "heal";
+          } else if (e.key == "m") {
+            player1.command = "something";
+            console.log(" ");
+          } else if (e.key == "n") {
+            player1.command = "gnihtemos";
+            console.log(" ");
+          } else if (e.key == "?") {
+            player1.command = "help";
+            console.log("help");
+            alert ("Controls: W = jump, A = go left, D = go right, K = attack, F =  force push, arrow keys = tutorial");
+          }
+        });
+                                  
+        document.addEventListener("keyup", function(e) {
+          if (e.keyCode == LEFT_KEY) {
+            player1.command = "wait";
+          } else if (e.keyCode == RIGHT_KEY) {
+            player1.command = "wait";
+          } else if (e.keyCode == UP_KEY) {
+            player1.command = "wait";
+          }
+          if (e.key == "a") {
+            player1.command = "wait";
+          } else if (e.key == "d") {
+            player1.command = "wait";
+          } else if (e.key == "w") {
+            player1.command = "wait";
+          } else if (e.key == " ") {
+            player1.command = "wait"; 
+          } else if (e.key == "~") {
+            player1.command = "wait";
+          } else if (e.key == "h") {
+            player1.command = "wait";
+          } else if (e.key == "?") {
+            player1.command = "wait";
+          }
+        });
+        
+        setInterval(function () {
+          for (let i = 0; i < allSprites.length; i++) {
+            playTurn(allSprites[i]);
+          }
+        }, 50);
+    
+        function playTurn(player) {
+          if (player.hp <= 0) {
+          /// change to defeated image
+            player.element.className = 'defeated';
+            player.state = "defeated"
+            window.setTimeout(function () {
+               if (player == player1){
+                player.element.className = 'solid player';
+                player.state = "normal";
+                player.hp = 150;
+                player.gold = player.gold - 5;
+               }
+               else {
+                 //for enemy
+                player.element.className = 'solid enemy';
+                player.hp = 100; 
+                player.state = "normal";
+                player.makeCoin(Math.random() * 800, 30);
+               }
+               player.x = player.spawnx;
+               player.y = player.spawny;
+               player.dx = 0;
+               player.dy = 0;
+               player.ax = 0;
+               player.ay = 0;
+               player.clinging = false;
+            }, 6000);
+            player.hp = 100;
+          } else if (player.hp > 150) {
+              player.hp -= 1;
+          } else { 
+            player.decideAction();
+          }
+          let newx = player.x;
+          let newy = player.y;
+          let margin = 10;
+          if (player.y + player.height + player.dy > bgBottom) {
+            player.dy = 0;
+            player.ay = 0;
+            newy = bgBottom - player.height;
+            player.state = "hit floor";
+          } else if (player.y - margin + player.dy < bgTop) {
+            player.dy = 1;
+            player.ay = 0;
+            newy = bgTop + margin + 1;
+            player.state = "hit ceiling";
+          } else if (!player.clinging) {
+            newy = player.y + player.dy;
+          }
+          
+          if (player.x - margin + player.width + player.dx > bgRight) {
+            player.dx = 0;
+            player.ax = 0;
+            newx = bgRight + margin - player.width;
+            player.state = "hit right side";
+          } else if (player.x + margin + player.dx < bgLeft) {
+            player.dx = 0;
+            player.ax = 0;
+            newx = bgLeft - margin;
+            player.state = "hit left side";
+          } else {
+            newx = player.x + player.dx;
+          }
+          if (collision(player.x, player.y, player, "wind")) {
+              player.dx -= 1;
+          }
+          newx = newx + player.dx;
+          let moving = (player.dx > 1 || player.dx < -1 ||
+                        player.dy > 1 || player.dy < -1);
+          if (!moving) {
+              // don't bother checking collisions.
+          } else if (!collision(newx, newy, player) 
+              /* || collision(player.x, player.y, player_img) */
+             ) {
+            if (newx != player.x) {
+              player.clinging = false;
+            }
+            player.y = newy;
+            player.x = newx;
+            player.state = "floating";
+          } else  if (!collision((player.x + 3 * newx)/4, (player.y + 3 * newy)/4, player)) {
+            player.y = (3 * player.y + newy)/4;
+            player.x = (3 * player.x + newx)/4;
+            player.state = "floating";
+          } else  if (!collision((player.x + newx)/2, (player.y + newy)/2, player)) {
+            player.y = (player.y + newy)/2;
+            player.x = (player.x + newx)/2;
+            player.state = "floating";
+          } else  if (!collision((3 * player.x + newx)/4, (3 * player.y + newy)/4, player)) {
+            player.y = (3 * player.y + newy)/4;
+            player.x = (3 * player.x + newx)/4;
+            player.state = "floating";
+          } else if (!collision(newx, player.y, player)) {
+            player.x = newx;
+            player.dy = 0;
+            player.ay = 0;
+            player.state = "skating";
+          } else if (!collision(player.x, newy, player)) {
+            player.y = newy;
+            player.dx = 0;
+            player.ax = 0;
+            player.state = "falling straight down";
+            player.cling();
+          } else {
+            player.dx = 0;
+            player.ax = 0;
+            player.dy = 0;
+            player.ay = 0;
+            state = "blocked";
+          }
+          
+          player.element.style.left = player.x + "px";
+          player.element.style.top = player.y + "px";
+          player.displayAction();
+          let debug = document.getElementById(player.id + "_debug");
+          if (debug) {
+            debug.innerText = player.state + " gold: " + player.gold + " hp: " + player.hp + " (" + Math.floor(player.x) + ", " + Math.floor(player.y) + ") + (" + Math.floor(player.dx * 100) / 100 + ", " + Math.floor(player.dy * 100) / 100 + ")";
+          }
+          player.dx = (player.dx + player.ax) * 0.9;
+          player.dy = (player.dy + player.ay) * 0.9;
+          if (player.clinging) {
+            player.ay = 0;
+          } else {
+            player.ay = player.ay + 0.05;
+          }
+          
+          let playerClasses = player.element.classList;
+          if (playerClasses.contains("player") || playerClasses.contains("enemy")) {
+            let touched_coin = collision(player.x, player.y, player, "coin");
+            if (touched_coin) {
+                console.log("got coin");
+                console.log(player);
+                player.gold += 1;
+                touched_coin.parentNode.removeChild(touched_coin);
+                setTimeout(function () {
+                  player.makeCoin(Math.random() * 1200, 30) 
+                }, 6000);
+            }
+          }
+          if (player1.gold >= 10 && levelNum == 1) {
+              let door = document.querySelector(".door");
+              door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 10 && levelNum == 1) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 2;
+              makeLevel(levelNum);
+            }
+          }
+          if (player1.gold >= 25 && levelNum == 2) {
+            let door = document.querySelector(".door");
+            door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 25 && levelNum == 2) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 3;
+              makeLevel(levelNum);
+            }
+          }
+          if (player1.gold >= 40 && levelNum == 3) {
+            let door = document.querySelector(".door");
+            door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 40 && levelNum == 3) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 4;
+              makeLevel(levelNum);
+            }
+          }
+          if (player1.gold >= 60 && levelNum == 4) {
+            let door = document.querySelector(".door");
+            door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 60 && levelNum == 4) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 5;
+              makeLevel(levelNum);
+            }
+          }
+          if (player1.gold >= 80 && levelNum == 5) {
+            let door = document.querySelector(".door");
+            door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 80 && levelNum == 5) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 6;
+              makeLevel(levelNum);
+            }
+          }
+          if (player1.gold >= 90 && levelNum == 6) {
+              let door = document.querySelector(".door");
+              door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 90 && levelNum == 6) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 7;
+              makeLevel(levelNum);
+            }
+          }
+          if (player1.gold >= 100 && levelNum == 7) {
+              let door = document.querySelector(".door");
+              door.style.display = "";
+          }
+          if (player == player1 && player.gold >= 100 && levelNum == 7) {
+            if (collision(player.x, player.y, player, "door")){
+              levelNum = 8;
+              makeLevel(levelNum);
+            }
+          }
+        }     
+        
+          
+          
+        function collision(x, y, myself, opt_className, opt_width, opt_height) {
+          let width = opt_width || myself.width;
+          let height = opt_height || myself.height;
+          let solids = document.getElementsByClassName(opt_className || "solid");
+          for (let i = 0; i < solids.length; i++) {
+            let solid = solids[i];
+            if (solid != myself.element &&
+                overlaps(x, y, width, height, 
+                         solid.offsetTop, solid.offsetLeft, solid.offsetWidth, solid.offsetHeight)) {
+             return solid; 
+            }
+          }
+          return false;
+        }
+        
+        function overlaps(x, y, w, h, top, left, width, height) {
+          let r = x + w;
+          
+          let right = left + width;
+          
+          let x_overlaps = (x >= left && x <= right ||
+                            r >= left && r <= right ||
+                            x < left && r > right);
+          if (! x_overlaps) return false;
+          let bottom = top + height;
+          let b = y + h;
+          let y_overlaps = (y >= top && y <= bottom ||
+                            b >= top && b <= bottom ||
+                            y < top && b > bottom);
+          return y_overlaps;
+        }
+    </script>
+</body>
+</html>
