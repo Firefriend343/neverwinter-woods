@@ -2,7 +2,7 @@
   <head>
     <title> Neverwinter Woods Level One </title>
      <style>
-      .plat { background: red; position: absolute; border-radius: 8px; border: solid grey 2px; transition: 0.5s;}
+      .plat { background: green; position: absolute; border-radius: 8px; border: solid grey 2px; transition: 0.5s;}
       .wind { background: #ddd; position: absolute; border-radius: 20px; opacity: 0.3}
       .coin { background: gold; position: absolute; border-radius: 40px; border: solid brown 2px; width: 30px; height: 30px; opacity: 0.3}
       .defeated { width: 0px !important; height: 0px !important; transition: 0.1s; }
@@ -19,6 +19,7 @@
 <body>
   <div id="bg" style="width:1300px; height:630px; background:white; border:2px solid black; margin: 2px;">
     <img id="player1" class="solid player" src="forest-ninja-pixilart.png" style="position:absolute;" width=30 height=64>
+    <img id="player2" class="solid player" src="aurum-dialogue-one-pixilart.png" style="position:absolute;" width=60 height=64>
     <!--- img id="enemy1" class="solid enemy" src="neverwinter-wars-testenemy1-pixilart.png" style="position:absolute; left:1100px; top:250px"width=80 height=80>
     <img id="enemy2" class="solid enemy" src="magic-carpet-animation-pixilart.gif" style="position:absolute; left:2800px; top:250px"width=40px height=40px>
     <img id="enemy3" class="solid enemy" src="pixil-frame-0 (1).png" style="position:absolute; left:2800px; top:250px"width=40px height=40px>
@@ -29,6 +30,7 @@
   </div> <!-- end bg -->
   
   <p id="player1_debug"></p>
+  <p id="player2_debug"></p>
   <p id="enemy1_debug"></p>
   <p id="enemy2_debug"></p>
   <p id="enemy3_debug"></p>
@@ -350,6 +352,10 @@
         player1.damage = 10;
         player1.knockback = 10;
         player1.hp = 150
+        let player2 = new Player(400, 800, "player2");
+        player2.damage = 10;
+        player2.knockback = 10;
+        player2.hp = 150
         let levelNum = 1;
         function makeLevel(levelNum) {
           bg.style.background = "#666";
@@ -358,6 +364,10 @@
           player1.dy = 0;
           player1.ax = 0;
           player1.ay = 0;
+          player2.dx = 0;
+          player2.dy = 0;
+          player2.ax = 0;
+          player2.ay = 0;
           let titleElement = document.querySelector("title");
           titleElement.innerText = " Neverwinter Woods Level " + levelNum;
           let door = document.querySelector(".door");
@@ -382,6 +392,8 @@
           if (levelNum == 1) {
             player1.x = 100;
             player1.y = 100;   
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(720, 200, 300, 30);
             new Plat(450, 140, 160, 30);
             new Plat(350, 410, 200, 30);
@@ -393,7 +405,9 @@
             
           } else if (levelNum == 2) {
             player1.x = 100;
-            player1.y = 100; 
+            player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(720, 200, 300, 35);
             new Plat(560, 200, 160, 35);
             new Plat(350, 410, 200, 35);
@@ -405,6 +419,8 @@
           } else if (levelNum == 3) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(666, 222, 300, 40, 888, 222, 0.2);
             new Plat(444, 141, 160, 40);
             new Plat(333, 444, 200, 40);
@@ -415,7 +431,9 @@
            
           } else if (levelNum == 4) {
             player1.x = 100;
-            player1.y = 100; 
+            player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(500, 315, 500, 60, 500, 415, 0.1);
             player1.makeCoin(100, 30);
             player1.makeCoin(300, 30);
@@ -423,6 +441,8 @@
           } else if (levelNum == 5) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(400, 120, 300, 45, 700, 420, 0.5);
             new Plat(600, 120, 300, 45, 200, 600, 0.5);
             new Plat(400, 830, 300, 45, 700, 200, 0.25);
@@ -431,6 +451,8 @@
           } else if (levelNum == 6) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(210, 100, 300, 20, 210, 120, 0.5);
             new Plat(60, 120, 300, 45, 480, 600, 0.5);
             new Plat(400, 650, 300, 45, 750, 220, 0.25);
@@ -439,6 +461,8 @@
            } else if (levelNum == 7) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(270, 140, 350, 30, 200, 100, 0.5);
             new Plat(60, 350, 350, 65, 470, 620, 0.5);
             new Plat(400, 680, 400, 65, 750, 220, 0.25);
@@ -447,6 +471,8 @@
            } else if (levelNum == 8) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(260, 140, 350, 30, 500, 340, 0.5);
             new Plat(100, 320, 350, 75, 470, 170, 0.5);
             new Plat(210, 530, 430, 65, 750, 280, 0.35);
@@ -455,6 +481,8 @@
            } else if (levelNum == 9) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(240, 180, 300, 30, 560, 340, 0.5);
             new Plat(100, 320, 350, 75, 470, 170, 0.5);
             new Plat(210, 530, 430, 65, 750, 280, 0.35);
@@ -464,6 +492,8 @@
           } else if (levelNum == 100) {
             player1.x = 100;
             player1.y = 100;
+            player2.x = 400;
+            player2.y = 800;   
             new Plat(Math.random * 1200, Math.random * 1200, Math.random * 1200, Math.random * 1200 );
             }
         }
