@@ -2,7 +2,7 @@
   <head>
     <title> Neverwinter Woods Level One </title>
      <style>
-      .plat { background: blue; position: absolute; border-radius: 8px; border: solid grey 2px; transition: 0.5s;}
+      .plat { background: red; position: absolute; border-radius: 8px; border: solid grey 2px; transition: 0.5s;}
       .wind { background: #ddd; position: absolute; border-radius: 20px; opacity: 0.3}
       .coin { background: gold; position: absolute; border-radius: 40px; border: solid brown 2px; width: 30px; height: 30px; opacity: 0.3}
       .defeated { width: 0px !important; height: 0px !important; transition: 0.1s; }
@@ -217,11 +217,11 @@
             } else if (this.command == "skin1") {
               this.element.src = "forest-ninja-pixilart.png";
             } else if (this.command == "skin2") {
-              window.setTimeout(function () { player1.element.src = "final-aurum-pixilart.png"; }, 2000);
+              window.setTimeout(function () { player1.element.src = "fire-soldier-pixilart.png"; }, 2000);
             } else if (this.command == "Aurum") {
-              this.element.src = "forest-ninja-pixilart.png";
+              this.element.src = "shadowfell-explorer-pixilart.png";
             } else if (this.command == "attack" && this.state != "attacking") {
-              this.element.src = "aurum-attack.png";
+              this.element.src = "forest-ninja-pixilart.png";
               window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png";  }, 200);
               window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png"; }, 300);
               window.setTimeout(function () { player1.element.src = "forest-ninja-pixilart.png"; }, 500);
